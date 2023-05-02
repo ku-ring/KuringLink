@@ -9,28 +9,41 @@ KuringLink is a networking module that links between Kuring iOS service and Kuri
 
 ## Code examples
 ```swift
-KuringLink.setup(key: "{API.KEY}")
+import Enigma
+import KuringLink
+
+let host = Enigma.kuring.decode(key: "{KEY.FOR.HOST}")
+KuringLink.setup(host: host)
+
 try await KuringLink.scanEssentials()
-let notices = await KuringLink.searchNotice(keyword: "2023")
-try await KuringLink.sendFeedback()
+let notices = try await KuringLink.notices(startsWith: "2023")
+try await KuringLink.sendFeedback(
+    "Hi", 
+    fcmToken: "{FCM.TOKEN}",
+    appVersion: "2.0.0",
+    osVersion: "16.0"
+)
 ```
 
 ## KuringLink
 
 The singleton class for the public *static* interfaces. It communicates with [TheSatellite/Satellite](https://github.com/KU-Stacks/TheSatellite) via `Antenna`.
 ```swift
-KuringLink.setup(key: "{API.KEY}")
+KuringLink.setup(host: "{HOST}")
 try await KuringLink.scanEssentials()
 ```
 
-### Setting up with API key
+### Setting up host and scheme to get start KuringLink with its satellite
 Create `Antenna` instance. This will create a new `Satellite` instance with API key internally.
 ```swift
-private static var antenna = Antenna()
+import Enigma
+import KuringLink
 
-public static func setup(key: Stirng) {
-    let antenna = Antenna(key: key)
-    Self.antenna = antenna
+let host = Enigma.kuring.decode(key: "{KEY.FOR.HOST}")
+KuringLink.setup(host: host)
+
+public static func setup(host: String, scheme: Satellite.Scheme = .https) {
+    antenna = Antenna(host: host, scheme: scheme)
 }
 ```
 
@@ -42,7 +55,7 @@ Fetch the essential data from the server such as:
 - whether there is any updates for the version or the resources
 ```swift
 public static func scanEssentials() async throws {
-    try await Self.antenna.scanEssentials()
+    try await antenna.scanEssentials()
 }
 ```
 
@@ -62,13 +75,14 @@ func scanEssentials() async throws {
     // fetching subscriptions...
     // checking new version status...
     // checking resources updates...
+}
 ```
 
 ## KuringRouter
 The class that contains and manages all publishers. It handles all events from KuringLink.
 ```swift
 MyAppView()
-    .receive(on: KuringRouter.myAppPublisher) {
-        print($0)
+    .receive(on: KuringRouter.noticeNotificationPublisher) { notice in
+        print(notice)
     }
 ```
