@@ -15,10 +15,10 @@ extension Antenna {
     /// `"User-Agent": "Kuring/1.2.0 iOS/14.1"`
     func sendFeedback(
         _ text: String,
-        fcmToken: String,
-        appVersion: String,
-        osVersion: String
+        fcmToken: String
     ) async throws -> Bool {
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+        let iosVersion = "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
         let response: EmptyResponse = try await satellite
             .response(
                 for: Action.sendFeedback.path,
@@ -26,7 +26,7 @@ extension Antenna {
                 httpHeaders: [
                     "Content-Type": "application/json",
                     "User-Token": fcmToken,
-                    "User-Agent": "Kuring/\(appVersion) iOS/\(osVersion)"
+                    "User-Agent": "Kuring/\(self.appVersion) iOS/\(iosVersion)"
                 ],
                 httpBody: Feedback(content: text)
             )

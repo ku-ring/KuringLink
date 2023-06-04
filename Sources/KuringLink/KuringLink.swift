@@ -12,7 +12,7 @@ import UserNotifications
 /// To get start `KuringLink`, you have to set up `host` and `scheme` to use `Satellite` instance.
 /// - IMPORTANT: To set up `host`, you need `Enigma`, the private Swift package that `ku-ring` members can acess only.
 public class KuringLink {
-    private static var antenna = Antenna(host: "")
+    private static var antenna = Antenna(host: "", appVersion: "")
     
     /// To get start `KuringLink`, you have to set up `host` and `scheme` to use `Satellite` instance.
     ///
@@ -26,7 +26,7 @@ public class KuringLink {
     /// KuringLink.setup(host: host)
     /// ```
     public static func setup(host: String, scheme: Satellite.Scheme = .https) {
-        antenna = Antenna(host: host, scheme: scheme)
+        antenna = Antenna(host: host, scheme: scheme, appVersion: "")
     }
     
     public static var fcmToken: String? {
@@ -138,15 +138,11 @@ public class KuringLink {
     /// `"User-Agent": "Kuring/1.2.0 iOS/14.1"`
     public static func sendFeedback(
         _ text: String,
-        fcmToken: String,
-        appVersion: String,
-        osVersion: String
+        fcmToken: String
     ) async throws -> Bool {
         try await antenna.sendFeedback(
             text,
-            fcmToken: fcmToken,
-            appVersion: appVersion,
-            osVersion: osVersion
+            fcmToken: fcmToken  
         )
     }
 }

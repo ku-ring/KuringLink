@@ -11,6 +11,7 @@ import XCTest
 final class AntennaTests: XCTestCase {
     let host = "{ENIGMA.HOST}"
     let fcmToken = "cZSHjO4_bUjirvsrxWzig5:APA91bHPojABL5oEXi5AcjJ8v4Vcp3KpJfFUD_3b-HhfV8m23_R6czJa3PwqcVqBZSHBb2t7Z3odUeD0cFKaMSkMmrGxTqyjJPfEZVfTPvmewV-xiMTWbrk-QKuc4Nrxd_BhEArO7Svo"
+    let appVersion = "2.0.0"
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -20,10 +21,16 @@ final class AntennaTests: XCTestCase {
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
+    
+    private var newAntenna: Antenna {
+        let antenna = Antenna(host: host, appVersion: appVersion)
+        antenna.satellite._startGPS()
+        return antenna
+    }
 
     // MARK: - Univ notice types
     func test_allUnivNoticeTypes() async throws {
-        let antenna = Antenna(host: host)
+        let antenna = newAntenna
         let allUnivNoticeTypes = try await antenna.allUnivNoticeTypes
         print(allUnivNoticeTypes)
         XCTAssertFalse(allUnivNoticeTypes.isEmpty)
@@ -31,7 +38,7 @@ final class AntennaTests: XCTestCase {
     }
     
     func test_univNoticeTypesSubscribedByFcmToken() async throws {
-        let antenna = Antenna(host: host)
+        let antenna = newAntenna
         let subscriptions = try await antenna
             .univNoticeTypes(subscribedBy: fcmToken)
         print(subscriptions)
@@ -43,7 +50,7 @@ final class AntennaTests: XCTestCase {
     }
     
     func test_subscribeUnivNoticeTypesWithNamesAndFcmToken() async throws {
-        let antenna = Antenna(host: host)
+        let antenna = newAntenna
         let categories = ["normal", "library", "bachelor"]
         let isUpdated = try await antenna.subscribeUnivNoticeTypes(categories, fcmToken: fcmToken)
         XCTAssertTrue(isUpdated)
@@ -51,7 +58,7 @@ final class AntennaTests: XCTestCase {
     
     // MARK: - Department
     func test_allDepartments() async throws {
-        let antenna = Antenna(host: host)
+        let antenna = newAntenna
         let allDepartments = try await antenna.allDepartments
         #if DEBUG
         print(allDepartments)
@@ -61,7 +68,7 @@ final class AntennaTests: XCTestCase {
     }
     
     func test_departmentsSubscribedByFcmToken() async throws {
-        let antenna = Antenna(host: host)
+        let antenna = newAntenna
         let subscriptions = try await antenna
             .departments(subscribedBy: fcmToken)
         print(subscriptions)
@@ -73,7 +80,7 @@ final class AntennaTests: XCTestCase {
     }
     
     func test_subscribeDepartmentsWithHostPrefixesAndFcmToken() async throws {
-        let antenna = Antenna(host: host)
+        let antenna = newAntenna
         let hostPrefixes = ["cse", "korea"]
         let isUpdated = try await antenna
             .subscribeDepartments(hostPrefixes, fcmToken: fcmToken)
@@ -83,16 +90,16 @@ final class AntennaTests: XCTestCase {
     // MARK: Search
     func test_noticesStartsWithKeyword() async throws {
         /// **ISSUE**: `url` 이 아닌 `baseUrl`로 내려옴
-//        let antenna = Antenna(host: host)
-//        let keyword = "2023"
-//        let notices = try await antenna
-//            .notices(startsWith: keyword)
-//        XCTAssertFalse(notices.isEmpty)
-//        XCTAssertTrue(notices[0].subject.contains(keyword))
+        let antenna = newAntenna
+        let keyword = "여름학기"
+        let notices = try await antenna
+            .notices(startsWith: keyword)
+        XCTAssertFalse(notices.isEmpty)
+        XCTAssertTrue(notices[0].subject.contains(keyword))
     }
     
     func test_staffsStartsWithKeyword() async throws {
-        let antenna = Antenna(host: host)
+        let antenna = newAntenna
         let keyword = "김"
         let staffs = try await antenna
             .staffs(startsWith: keyword)
@@ -102,24 +109,13 @@ final class AntennaTests: XCTestCase {
     
     // MARK: - Feedback
     func test_sendFeedback() async throws {
-        let antenna = Antenna(host: host)
+        let antenna = newAntenna
         let text = "iOS 쿠링링크 테스트메세지입니다. 테스트서버가 https 로 호스팅이 안되어서 프로덕션에 테스트합니다 - 재성"
-        let osVersion = await UIDevice.current.systemVersion
         let isSucceed = try await antenna
             .sendFeedback(
                 text,
-                fcmToken: fcmToken,
-                appVersion: "2.0.0",
-                osVersion: osVersion
+                fcmToken: fcmToken
             )
         XCTAssertTrue(isSucceed)
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-
 }

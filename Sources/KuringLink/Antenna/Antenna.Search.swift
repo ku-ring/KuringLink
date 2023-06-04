@@ -14,7 +14,7 @@ extension Antenna {
     
     func notices(startsWith keyword: String) async throws -> [Notice] {
         struct SearchResult: Codable {
-            let noticeList: [Notice]
+            let noticeList: [SearchedNotice]
         }
         
         let response: Response<SearchResult> = try await satellite
@@ -25,7 +25,7 @@ extension Antenna {
                     .init(name: "content", value: keyword)
                 ]
             )
-        return response.data.noticeList
+        return response.data.noticeList.map { $0.asNotice }
     }
     
     func staffs(startsWith keyword: String) async throws -> [Staff] {
